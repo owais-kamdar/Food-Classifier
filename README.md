@@ -1,6 +1,6 @@
 # Food Classification System
 
-A multi-approach food classification system using computer vision and machine learning techniques. This project implements three different approaches to classify food images into 121 different categories, with a focus on accuracy, efficiency, and practical deployment. The system is particularly useful in real-world scenarios such as:
+A multi-approach food classification system using computer vision. This project implements three different approaches to classify food images into 121 different categories, focusing on accuracy and practicality. The system is useful in real-world scenarios such as:
 - Identifying unfamiliar dishes at restaurants
 - Understanding foreign cuisine while traveling
 - Learning about new food items at markets or food festivals
@@ -23,35 +23,39 @@ This project approaches this problem through three approaches:
 Added Feature:
 1. **LLM Based Nutrition and Feedback**: API Call to GPT-3.5-Turbo to provide information for classified food
 
+## [Deployed App](https://docs.google.com/presentation/d/1RSxAnuA1UHcGn0WJa4XNEhkY_5KclEkmPBDFUnOo4aE/edit?usp=sharing)
+
+
 ## Previous Efforts in AI-Powered Food Classification and Tracking
 
+### [Food/Non-food Image Classification and Categorization Using GoogLeNet](https://dl.acm.org/doi/abs/10.1145/2986035.2986039)
 
-### Food/Non-food Image Classification and Categorization Using GoogLeNet
+**Authors**: Ashutosh Singla, Lin Yuan, Touradj Ebrahimi
 
-Authors: Ashutosh Singla, Lin Yuan, Touradj Ebrahimi
-Two-stage pipeline with a GoogLeNet backbone. First, it filters between food vs. non-food images. Then, it classifies food images into categories. This achieved strong performance through minimal fine-tuning, showcasing feature transferability.
-https://dl.acm.org/doi/abs/10.1145/2986035.2986039?casa_token=b3R3jExvbPgAAAAA:7zBVBtVkkR7zJE_N9NrVW_hCTxvfk90nhOIBhLyUKtKi9WYcXTyVkdSlHn75Hk6rXO1QNui7IJBU
-
-### Personalized Classifier for Food Image Recognition
-Authors: Shota Horiguchi, Sosuke Amano, Makoto Ogawa, Kiyoharu Aizawa
-Proposed an adaptive model combining 1-Nearest Neighbor and Nearest Class Mean classifiers. This framework adapts to individual users with minimal samples. Illustrates effectiveness in real-world food logging environments.
-https://arxiv.org/abs/1804.04600
-
-### Food Classifier Model (GitHub – darkangrycoder) 
-
-Uses transfer learning with multiple pre-trained architectures (VGG16, Inception, ResNet). Showed improved accuracy for food classification with few training images by fine-tuning on food-specific datasets.
-https://github.com/darkangrycoder/food_classifier_model
-
-### Cal AI – AI-Powered Calorie Tracking App
-
-A mobile calorie tracking app that uses AI to estimate calories from photos. It reports ~90% accuracy in calorie prediction by using vision-based models trained on large annotated food image datasets.
-https://www.calai.app/
+Two-stage pipeline with a GoogLeNet architecture. First, it filters between food vs. non-food images. In this first stage, researchers were able to achieve an accuracy of 99.2%. After this first fiter, it classifies food images into categories. This also achieved strong performance at 83.6% through minimal fine-tuning, showcasing feature transferability.
 
 
-### MyFitnessPal
+### [Personalized Classifier for Food Image Recognition](https://arxiv.org/abs/1804.04600)
+
+**Authors**: Shota Horiguchi, Sosuke Amano, Makoto Ogawa, Kiyoharu Aizawa
+
+Researchers proposed an adaptive model combining 1-Nearest Neighbor and Nearest Class Mean classifiers that addressess the challenge of recognition in real world environments. By using this framework, the classifiers are able to adapt to individual users with minimal samples. Illustrates effectiveness in real-world food logging environments, as users add new food images.
+
+
+### [Food Classifier Model](https://github.com/darkangrycoder/food_classifier_model)
+
+Uses transfer learning with multiple pre-trained architectures like VGG16, Inception, ResNet to classify different foods. Showed improved accuracy for food classification with few training images by fine-tuning on food-specific datasets. Features a user-friendly interface and nutrition information. 
+
+
+### [Cal AI – AI-Powered Calorie Tracking App](https://www.calai.app/)
+
+A mobile calorie tracking app that uses AI to estimate calories from photos. It reports ~90% accuracy in calorie prediction by using vision-based models trained on large annotated food image datasets. Allows users to snap an image of their meal, and get calculated calories and nutritional information.
+
+
+### [MyFitnessPal](https://www.myfitnesspal.com/)
 
 Commonly used food and nutrition tracker. Primarily relies on manual input and barcode scanning, but includes a basic camera-based logging feature called Meal Scan. Lacks  true image classification or AI-driven insights compared to other solutions like Cal AI.
-https://www.myfitnesspal.com/
+
 
 
 
@@ -210,15 +214,15 @@ Food-Estimator/
   - Loads pre-trained EfficientNet-B0
   - Replaces final layer for food classification
   - Uses Adam optimizer (lr=1e-4)
-  - Epoch = 15
+  - Epochs = 15
   - Cross-entropy loss
 
 
 
 ## Evaluation Metrics
-The system uses two primary metrics for evaluation:
+All models were evaluated on test set.
 
-### All models were evaluated on test set.
+The system uses two primary metrics for evaluation:
 
 1. **Accuracy (Primary Metric)**:
    - Overall classification accuracy
@@ -228,6 +232,13 @@ The system uses two primary metrics for evaluation:
    - Macro average F1-score across all classes
    - Balances precision and recall
 
+
+## Performance Comparison
+| Model | Accuracy | F1-Score | 
+|-------|----------|----------|
+| Naive | 0.0585   | 0.05     | 
+| RF    | 0.3122   | 0.33     | 
+| Deep  | 0.8007   | 0.80     |
 
 
 ## Installation
@@ -261,49 +272,41 @@ The setup script performs the following steps:
    streamlit run app.py
    ```
 
+2. **Add OpenAI Key to .env file**
+
 2. **Model Selection**:
    - Upload food images for classification
    - View predictions and nutritional information
-
-# **Model Evaluation**:
-
-## Performance Comparison
-| Model | Accuracy | F1-Score | 
-|-------|----------|----------|
-| Naive | 0.0585   | 0.05     | 
-| RF    | 0.3122   | 0.33     | 
-| Deep  | 0.8007   | 0.80     |
 
 
 ## Challenges
 1. **Merging Dataset**:
    - Varying class names and categories
-   - Solution: Normalizing class names, merging and manually reviewing
 
 2. **Class Imbalance**:
    - Different food classes have varying numbers of images
-   - Solution: Data augmentation and downsampling to maintain 500 images per class
 
 3. **Feature Extraction**:
-   - Food images have high intra-class variance
-   - Solution: Multiple feature extraction methods and PCA for dimensionality reduction
+   - Food images have high variance
 
 4. **Computational Resources**:
    - Large dataset and Feature files (121 classes × 500 images)
    - Time-consuming training even for Traditional ML
-   - Solution: Efficient data loading and GPU acceleration on Colab
+
+5. **API Name Matching Limitations**:
+   - The detected food wasn't properly or accurately outputed through several food APIs
 
 
 
 ## [Presentation Slides](https://docs.google.com/presentation/d/1RSxAnuA1UHcGn0WJa4XNEhkY_5KclEkmPBDFUnOo4aE/edit?usp=sharing)
-## [Deployed App](https://docs.google.com/presentation/d/1RSxAnuA1UHcGn0WJa4XNEhkY_5KclEkmPBDFUnOo4aE/edit?usp=sharing)
-## [Model](https://huggingface.co/okamdar/food-classification/tree/main)
+
+## [Hosted Models](https://huggingface.co/okamdar/food-classification/tree/main)
 
 
 ## Ethics Statement
-This project is committed to:
-1. **Privacy**: No collection of personal data
-2. **Bias Mitigation**: Diverse food classes across cultures
-3. **Transparency**: Clear documentation of model limitations
-4. **Accessibility**: Open-source implementation
-5. **Responsible Use**: Intended for educational and research purposes
+1. **Privacy**: No collection of personal data of identifying information
+2. **Accessibility**: Open-source implementations and clear documentation
+3. **Responsible Use**: Licensed under MIT and intended for educational and research purposes
+
+
+### ChatGPT-4o and Cursor were used to produce several scripts in this codebase on 4/20/2025. Goal was to reorganize code notebooks into organized, modular, and polished scripts. Several prompts were used such as "organize this code into a modular and cohesive script" etc. 

@@ -48,12 +48,7 @@ def main():
     
     # Add description section
     st.markdown("""
-    ## About This App
-    
-    This app uses artificial intelligence to classify food images and provide nutritional information. 
-    It implements three different approaches to food classification:
-    
-    ### How to Use:
+       ### How to Use:
     1. Select a classifier from the sidebar
     2. Upload a food image (JPG, JPEG, or PNG)
     3. View the prediction and nutritional information
