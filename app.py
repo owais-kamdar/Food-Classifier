@@ -12,6 +12,7 @@ import torchvision.transforms as transforms
 from torchvision import models
 import torch.nn as nn
 from huggingface_hub import hf_hub_download
+import psutil
 
 # Get the correct project root
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -63,8 +64,17 @@ def load_data():
         feature_index = json.load(f)
     return feature_index
 
+def get_memory_usage():
+    process = psutil.Process(os.getpid())
+    mem = process.memory_info().rss / (1024 ** 2)  # Convert to MB
+    return f"{mem:.2f} MB"
+
 def main():
     st.title("🍽️ Food Classifier")
+    
+    # Add memory monitoring to sidebar
+    st.sidebar.markdown("System Monitor")
+    st.sidebar.write("RAM Usage:", get_memory_usage())
     
     # Add description section
     st.markdown("""
