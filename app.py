@@ -27,9 +27,30 @@ from scripts.trad.ML import predict_from_image as predict_from_image_ml
 # Constants for deep learning
 IMG_SIZE = 224
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# use listed class names in order
 
-# Get class names in correct order for accuracy
-class_names = sorted(os.listdir("data/final/splits/train/images"))
+class_names = ['apple pie', 'baby back ribs', 'baked potato', 'baklava', 
+               'beef carpaccio', 'beef tartare', 'beet salad', 'beignets', 
+               'bibimbap', 'bread pudding', 'breakfast burrito', 'bruschetta', 
+               'butter naan', 'caesar salad', 'cannoli', 'caprese salad', 'carrot cake', 
+               'ceviche', 'chai', 'chapati', 'cheese plate', 'cheesecake', 'chicken curry', 
+               'chicken quesadilla', 'chicken wings', 'chocolate cake', 'chocolate mousse', 
+               'chole bhature', 'churros', 'clam chowder', 'club sandwich', 'crab cakes', 
+               'creme brulee', 'crispy chicken', 'croque madame', 'cup cakes', 'dal makhani', 
+               'deviled eggs', 'dhokla', 'donuts', 'dumplings', 'edamame', 'eggs benedict', 
+               'escargots', 'falafel', 'filet mignon', 'fish and chips', 'foie gras', 'french fries', 
+               'french onion soup', 'french toast', 'fried calamari', 'fried rice', 'frozen yogurt', 
+               'garlic bread', 'gnocchi', 'greek salad', 'grilled cheese sandwich', 'grilled salmon', 
+               'guacamole', 'gyoza', 'hamburger', 'hot and sour soup', 'hot dog', 'huevos rancheros', 
+               'hummus', 'ice cream', 'idli', 'jalebi', 'kaathi rolls', 'kadai paneer', 'kulfi', 
+               'lasagna', 'lobster bisque', 'lobster roll sandwich', 'macaroni and cheese', 'macarons', 
+               'masala dosa', 'miso soup', 'momos', 'mussels', 'nachos', 'omelette', 'onion rings', 
+               'oysters', 'paani puri', 'pad thai', 'paella', 'pakode', 'pancakes', 'panna cotta', 
+               'pav bhaji', 'peking duck', 'pho', 'pizza', 'pork chop', 'poutine', 'prime rib', 
+               'pulled pork sandwich', 'ramen', 'ravioli', 'red velvet cake', 'risotto', 'samosa', 
+               'sandwich', 'sashimi', 'scallops', 'seaweed salad', 'shrimp and grits', 'spaghetti bolognese', 
+               'spaghetti carbonara', 'spring rolls', 'steak', 'strawberry shortcake', 'sushi', 'tacos', 
+               'takoyaki', 'taquito', 'tiramisu', 'tuna tartare', 'waffles']
 
 # Load necessary data
 @st.cache_data
