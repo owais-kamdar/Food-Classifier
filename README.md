@@ -24,7 +24,7 @@ Added Feature:
 1. **LLM Based Nutrition and Feedback**: API Call to GPT-3.5-Turbo to provide information for classified food
 
 ## [Deployed App](https://food-classifier-w7wtvmoi4nwkrahdh4tjyh.streamlit.app/)
-### The Machine Learning approach was taken out of the final app due to large model size and memory constraints.
+The Machine Learning approach was taken out of the final app due to large model size and memory constraints.
 
 
 ## Previous Efforts in AI-Powered Food Classification and Tracking
