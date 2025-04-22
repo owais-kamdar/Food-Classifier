@@ -20,9 +20,8 @@ sys.path.append(project_root)
 # Import classifiers
 from scripts.naive.naive import classify_image_by_features
 from scripts.api.food_summary import get_food_summary
-from scripts.deep.train import predict_from_image as predict_from_image_deep
+from scripts.deep.train import predict_from_image as predict_from_image_deep, load_model
 from scripts.trad.ML import predict_from_image as predict_from_image_ml
-
 
 # Constants for deep learning
 IMG_SIZE = 224
@@ -64,6 +63,11 @@ def load_data():
         feature_index = json.load(f)
     return feature_index
 
+# Load deep learning model
+@st.cache_resource
+def load_deep_model():
+    return load_model()
+
 def main():
     st.title("🍽️ Food Classifier")
     
@@ -95,11 +99,19 @@ def main():
         - Deep Learning: EfficientNet-B0 model trained on 121 food classes
         """)
 
-    # Load data
+    # Load data and models
     feature_index = load_data()
     if feature_index is None:
         st.error("Failed to load feature index. Please check the file path.")
         return
+
+    # Load deep learning model if needed
+    if model_type == "Deep Learning":
+        try:
+            model = load_deep_model()
+        except Exception as e:
+            st.error(f"Failed to load deep learning model: {str(e)}")
+            return
 
     # File uploader
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
@@ -152,7 +164,7 @@ def main():
                 st.error(f"Error in Random Forest classifier: {str(e)}")
         else:  # Deep Learning
             try:
-                # Make prediction using the imported function
+                # Make prediction using the loaded model
                 prediction, confidence = predict_from_image_deep(img_array)
                 
                 # Display results

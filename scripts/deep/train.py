@@ -32,11 +32,38 @@ EPOCHS = 15
 LR = 1e-4
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# Class names list
+class_names = ['apple pie', 'baby back ribs', 'baked potato', 'baklava', 
+               'beef carpaccio', 'beef tartare', 'beet salad', 'beignets', 
+               'bibimbap', 'bread pudding', 'breakfast burrito', 'bruschetta', 
+               'butter naan', 'caesar salad', 'cannoli', 'caprese salad', 'carrot cake', 
+               'ceviche', 'chai', 'chapati', 'cheese plate', 'cheesecake', 'chicken curry', 
+               'chicken quesadilla', 'chicken wings', 'chocolate cake', 'chocolate mousse', 
+               'chole bhature', 'churros', 'clam chowder', 'club sandwich', 'crab cakes', 
+               'creme brulee', 'crispy chicken', 'croque madame', 'cup cakes', 'dal makhani', 
+               'deviled eggs', 'dhokla', 'donuts', 'dumplings', 'edamame', 'eggs benedict', 
+               'escargots', 'falafel', 'filet mignon', 'fish and chips', 'foie gras', 'french fries', 
+               'french onion soup', 'french toast', 'fried calamari', 'fried rice', 'frozen yogurt', 
+               'garlic bread', 'gnocchi', 'greek salad', 'grilled cheese sandwich', 'grilled salmon', 
+               'guacamole', 'gyoza', 'hamburger', 'hot and sour soup', 'hot dog', 'huevos rancheros', 
+               'hummus', 'ice cream', 'idli', 'jalebi', 'kaathi rolls', 'kadai paneer', 'kulfi', 
+               'lasagna', 'lobster bisque', 'lobster roll sandwich', 'macaroni and cheese', 'macarons', 
+               'masala dosa', 'miso soup', 'momos', 'mussels', 'nachos', 'omelette', 'onion rings', 
+               'oysters', 'paani puri', 'pad thai', 'paella', 'pakode', 'pancakes', 'panna cotta', 
+               'pav bhaji', 'peking duck', 'pho', 'pizza', 'pork chop', 'poutine', 'prime rib', 
+               'pulled pork sandwich', 'ramen', 'ravioli', 'red velvet cake', 'risotto', 'samosa', 
+               'sandwich', 'sashimi', 'scallops', 'seaweed salad', 'shrimp and grits', 'spaghetti bolognese', 
+               'spaghetti carbonara', 'spring rolls', 'steak', 'strawberry shortcake', 'sushi', 'tacos', 
+               'takoyaki', 'taquito', 'tiramisu', 'tuna tartare', 'waffles']
+
 # Directory paths
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 DATA_DIR = os.path.join(PROJECT_ROOT, "data/final/splits")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output")
+
+# Add this after the imports
+model = None
 
 def setup_data(data_dir):
     """Setup data loaders and transformations for training, validation, and testing.
@@ -66,10 +93,6 @@ def setup_data(data_dir):
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
-
-    # Get class names from check_class_order
-    class_names = sorted(os.listdir(os.path.join(data_dir, "train/images")))
-
 
     # Create datasets
     train_dataset = datasets.ImageFolder(os.path.join(data_dir, "train/images"), transform=train_transform)
@@ -228,9 +251,27 @@ def evaluate_model(model, test_loader, class_names):
     
     return report, cm, accuracy
 
+def load_model():
+    """Load the model from Hugging Face once when the app starts."""
+    global model
+    if model is None:
+        print("Loading model from Hugging Face...")
+        model_path = hf_hub_download(
+            repo_id="okamdar/food-classification",
+            filename="efficientnet_b0.pth",
+            local_dir=MODELS_DIR
+        )
+        
+        # Create and load model
+        model = models.efficientnet_b0(pretrained=False)
+        model.classifier[1] = nn.Linear(model.classifier[1].in_features, len(class_names))
+        model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+        model.eval()
+        model = model.to(DEVICE)
+    return model
+
 def predict_from_image(image_array):
-    """Predict food class from an image array using the Hugging Face model.
-    This function: Downloads model from Hugging Face to run inference on an image
+    """Predict food class from an image array using the loaded model.
     
     Args:
         image_array: numpy array of the image (RGB format)
@@ -238,22 +279,8 @@ def predict_from_image(image_array):
     Returns:
         tuple: (predicted_class, confidence)
     """
-    # Download and load model from Hugging Face
-    print("Downloading model from Hugging Face...")
-    model_path = hf_hub_download(
-        repo_id="okamdar/food-classification",
-        filename="efficientnet_b0.pth",
-        local_dir=MODELS_DIR
-    )
-    
-    # Get class names
-    class_names = sorted(os.listdir(os.path.join(DATA_DIR, "train/images")))
-    
-    # Create and load model
-    model = models.efficientnet_b0(pretrained=False)
-    model.classifier[1] = nn.Linear(model.classifier[1].in_features, len(class_names))
-    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-    model.eval()
+    # Get the loaded model
+    model = load_model()
     
     # Convert numpy array to PIL Image
     image = Image.fromarray(image_array)

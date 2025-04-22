@@ -188,8 +188,8 @@ Food-Estimator/
 - **Architecture**:
   - Random Forest Classifier
   - Preprocessing pipeline:
-    - StandardScaler normalization
-    - PCA (95% variance retained)
+  - StandardScaler normalization
+  - PCA (95% variance retained)
   - Model parameters:
     - 300 estimators
     - Max depth of 35
