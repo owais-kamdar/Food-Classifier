@@ -14,6 +14,10 @@ import torch.nn as nn
 from huggingface_hub import hf_hub_download
 import psutil
 
+import os
+port = os.environ.get("PORT", 8501)
+
+
 # Get the correct project root
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 sys.path.append(project_root)
