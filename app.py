@@ -14,8 +14,6 @@ import torch.nn as nn
 from huggingface_hub import hf_hub_download
 import psutil
 
-import os
-port = os.environ.get("PORT", 8501)
 
 
 # Get the correct project root
