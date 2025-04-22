@@ -19,11 +19,19 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.env
 
 # Virtual Environment
 venv/
 env/
 ENV/
+
+# data
+data/raw/
+data/processed/ 
+data/final/
+data/raw/*
+!data/raw/.gitkeep
 
 # IDEs and editors
 .idea/
@@ -32,16 +40,7 @@ ENV/
 *.swo
 .DS_Store
 
-# Project specific
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/outputs/*
-!data/outputs/.gitkeep
-models/*
-!models/.gitkeep
-
 # Jupyter Notebook
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+models/rf_model.pkl
