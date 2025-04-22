@@ -53,6 +53,14 @@ class_names = ['apple pie', 'baby back ribs', 'baked potato', 'baklava',
                'spaghetti carbonara', 'spring rolls', 'steak', 'strawberry shortcake', 'sushi', 'tacos', 
                'takoyaki', 'taquito', 'tiramisu', 'tuna tartare', 'waffles']
 
+# Initialize session state for model caching
+if 'deep_model' not in st.session_state:
+    st.session_state.deep_model = None
+if 'ml_model' not in st.session_state:
+    st.session_state.ml_model = None
+if 'model_loaded' not in st.session_state:
+    st.session_state.model_loaded = False
+
 # Load necessary data
 @st.cache_data
 def load_data():
@@ -66,30 +74,32 @@ def load_data():
     return feature_index
 
 def get_memory_usage():
+    """Get current memory usage in MB"""
     process = psutil.Process(os.getpid())
     mem = process.memory_info().rss / (1024 ** 2)  # Convert to MB
     return f"{mem:.2f} MB"
-
-# Initialize session state for model caching
-if 'deep_model' not in st.session_state:
-    st.session_state.deep_model = None
-if 'ml_model' not in st.session_state:
-    st.session_state.ml_model = None
 
 def load_model_once(model_type):
     """Load model only once and cache it in session state"""
     if model_type == "Deep Learning" and st.session_state.deep_model is None:
         try:
             st.session_state.deep_model = load_deep_model()
+            st.session_state.model_loaded = True
+            st.success("Deep Learning model loaded successfully!")
         except Exception as e:
             st.error(f"Failed to load deep learning model: {str(e)}")
+            st.session_state.model_loaded = False
             return None
         return st.session_state.deep_model
     elif model_type == "Traditional ML" and st.session_state.ml_model is None:
         try:
             st.session_state.ml_model = load_ml_model()
+            st.session_state.model_loaded = True
+            st.success("Random Forest model loaded successfully!")
         except Exception as e:
             st.error(f"Failed to load Random Forest model: {str(e)}")
+            st.info("Please ensure you have internet access and the model repository is accessible.")
+            st.session_state.model_loaded = False
             return None
         return st.session_state.ml_model
     return st.session_state.deep_model if model_type == "Deep Learning" else st.session_state.ml_model
@@ -102,6 +112,7 @@ def clear_models():
     if st.session_state.ml_model is not None:
         del st.session_state.ml_model
         st.session_state.ml_model = None
+    st.session_state.model_loaded = False
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
