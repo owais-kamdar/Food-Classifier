@@ -57,23 +57,20 @@ model = None
 from scripts.dataset.make_features import extract_features
 
 def load_model():
-    """Load the Random Forest model from ONNX format."""
+    """Load the Random Forest model from Hugging Face once when the app starts."""
     global model
     if model is None:
-        try:
-            print("Loading Random Forest model from Hugging Face...")
-            model_path = hf_hub_download(
-                repo_id="okamdar/food-classification",
-                filename="rf_model.onnx"
-            )
-            print(f"Model downloaded to: {model_path}")
-            import onnxruntime as ort
-            model = ort.InferenceSession(model_path)
-            print("Model loaded successfully from Hugging Face")
-        except Exception as e:
-            print(f"Error loading model: {str(e)}")
-            print("Please ensure the model repository is accessible on Hugging Face")
-            raise
+        print("Loading Random Forest model from Hugging Face...")
+        model_path = hf_hub_download(
+            repo_id="okamdar/food-classification",
+            filename="rf_model.onnx",
+            local_dir=os.path.join(project_root, "models")
+        )
+        
+        # Load ONNX model
+        import onnxruntime as ort
+        model = ort.InferenceSession(model_path)
+        print("Model loaded successfully from Hugging Face")
     return model
 
 def train_model():
