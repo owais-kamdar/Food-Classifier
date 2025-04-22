@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 import json
-import joblib
+# import joblib
 from PIL import Image
 import io
 import os
@@ -24,7 +24,7 @@ sys.path.append(project_root)
 from scripts.naive.naive import classify_image_by_features
 from scripts.api.food_summary import get_food_summary
 from scripts.deep.train import predict_from_image as predict_from_image_deep, load_model as load_deep_model
-from scripts.trad.ML import predict_from_image as predict_from_image_ml, load_model as load_ml_model
+# from scripts.trad.ML import predict_from_image as predict_from_image_ml, load_model as load_ml_model
 
 # Constants for deep learning
 IMG_SIZE = 224
@@ -57,8 +57,8 @@ class_names = ['apple pie', 'baby back ribs', 'baked potato', 'baklava',
 # Initialize session state for model caching
 if 'deep_model' not in st.session_state:
     st.session_state.deep_model = None
-if 'ml_model' not in st.session_state:
-    st.session_state.ml_model = None
+# if 'ml_model' not in st.session_state:
+#     st.session_state.ml_model = None
 if 'model_loaded' not in st.session_state:
     st.session_state.model_loaded = False
 
@@ -93,27 +93,27 @@ def load_model_once(model_type):
             st.session_state.model_loaded = False
             return None
         return st.session_state.deep_model
-    elif model_type == "Traditional ML" and st.session_state.ml_model is None:
-        try:
-            st.session_state.ml_model = load_ml_model()
-            st.session_state.model_loaded = True
-            st.success("Random Forest model loaded successfully!")
-        except Exception as e:
-            st.error(f"Failed to load Random Forest model: {str(e)}")
-            st.info("Please ensure you have internet access and the model repository is accessible.")
-            st.session_state.model_loaded = False
-            return None
-        return st.session_state.ml_model
-    return st.session_state.deep_model if model_type == "Deep Learning" else st.session_state.ml_model
+    # elif model_type == "Traditional ML" and st.session_state.ml_model is None:
+    #     try:
+    #         st.session_state.ml_model = load_ml_model()
+    #         st.session_state.model_loaded = True
+    #         st.success("Random Forest model loaded successfully!")
+    #     except Exception as e:
+    #         st.error(f"Failed to load Random Forest model: {str(e)}")
+    #         st.info("Please ensure you have internet access and the model repository is accessible.")
+    #         st.session_state.model_loaded = False
+    #         return None
+    #     return st.session_state.ml_model
+    return st.session_state.deep_model if model_type == "Deep Learning" else None
 
 def clear_models():
     """Clear models from memory when switching types"""
     if st.session_state.deep_model is not None:
         del st.session_state.deep_model
         st.session_state.deep_model = None
-    if st.session_state.ml_model is not None:
-        del st.session_state.ml_model
-        st.session_state.ml_model = None
+    # if st.session_state.ml_model is not None:
+    #     del st.session_state.ml_model
+    #     st.session_state.ml_model = None
     st.session_state.model_loaded = False
     gc.collect()
     if torch.cuda.is_available():
@@ -139,8 +139,8 @@ def main():
         st.header("Model Selection")
         model_type = st.radio(
             "Choose Classifier:",
-            ["Naive Classifier", "Traditional ML", "Deep Learning"],
-            index=2,  # Default to Deep Learning
+            ["Naive Classifier", "Deep Learning"],
+            index=1,  # Default to Deep Learning
             on_change=clear_models  # Clear models when switching types
         )
         
@@ -151,7 +151,6 @@ def main():
         
         Available models:
         - Naive Classifier: Simple Feature-based classification
-        - Traditional ML: Random Forest Classification
         - Deep Learning: EfficientNet-B0 model trained on 121 food classes
         """)
 
@@ -163,7 +162,7 @@ def main():
 
     # Load model if needed
     model = None
-    if model_type in ["Deep Learning", "Traditional ML"]:
+    if model_type == "Deep Learning":
         model = load_model_once(model_type)
         if model is None:
             return
@@ -203,20 +202,20 @@ def main():
                     st.write(summary)
             except Exception as e:
                 st.error(f"Error in naive classifier: {str(e)}")
-        elif model_type == "Traditional ML":
-            try:
-                # Make prediction using Random Forest
-                prediction = predict_from_image_ml(img_array)
-                
-                # Display results
-                st.subheader(f"**Prediction:** {prediction}")
-                
-                # Get and display food summary
-                summary = get_food_summary(prediction)
-                st.subheader("**Food Summary:**")
-                st.write(summary)
-            except Exception as e:
-                st.error(f"Error in Random Forest classifier: {str(e)}")
+        # elif model_type == "Traditional ML":
+        #     try:
+        #         # Make prediction using Random Forest
+        #         prediction = predict_from_image_ml(img_array)
+        #         
+        #         # Display results
+        #         st.subheader(f"**Prediction:** {prediction}")
+        #         
+        #         # Get and display food summary
+        #         summary = get_food_summary(prediction)
+        #         st.subheader("**Food Summary:**")
+        #         st.write(summary)
+        #     except Exception as e:
+        #         st.error(f"Error in Random Forest classifier: {str(e)}")
         else:  # Deep Learning
             try:
                 # Make prediction using the loaded model
