@@ -13,8 +13,7 @@ from torchvision import models
 import torch.nn as nn
 from huggingface_hub import hf_hub_download
 import psutil
-
-
+import gc
 
 # Get the correct project root
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -71,6 +70,42 @@ def get_memory_usage():
     mem = process.memory_info().rss / (1024 ** 2)  # Convert to MB
     return f"{mem:.2f} MB"
 
+# Initialize session state for model caching
+if 'deep_model' not in st.session_state:
+    st.session_state.deep_model = None
+if 'ml_model' not in st.session_state:
+    st.session_state.ml_model = None
+
+def load_model_once(model_type):
+    """Load model only once and cache it in session state"""
+    if model_type == "Deep Learning" and st.session_state.deep_model is None:
+        try:
+            st.session_state.deep_model = load_deep_model()
+        except Exception as e:
+            st.error(f"Failed to load deep learning model: {str(e)}")
+            return None
+        return st.session_state.deep_model
+    elif model_type == "Traditional ML" and st.session_state.ml_model is None:
+        try:
+            st.session_state.ml_model = load_ml_model()
+        except Exception as e:
+            st.error(f"Failed to load Random Forest model: {str(e)}")
+            return None
+        return st.session_state.ml_model
+    return st.session_state.deep_model if model_type == "Deep Learning" else st.session_state.ml_model
+
+def clear_models():
+    """Clear models from memory when switching types"""
+    if st.session_state.deep_model is not None:
+        del st.session_state.deep_model
+        st.session_state.deep_model = None
+    if st.session_state.ml_model is not None:
+        del st.session_state.ml_model
+        st.session_state.ml_model = None
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
 def main():
     st.title("🍽️ Food Classifier")
     
@@ -92,7 +127,8 @@ def main():
         model_type = st.radio(
             "Choose Classifier:",
             ["Naive Classifier", "Traditional ML", "Deep Learning"],
-            index=2  # Default to Deep Learning
+            index=2,  # Default to Deep Learning
+            on_change=clear_models  # Clear models when switching types
         )
         
         st.markdown("---")
@@ -112,18 +148,11 @@ def main():
         st.error("Failed to load feature index. Please check the file path.")
         return
 
-    # Load models if needed
-    if model_type == "Deep Learning":
-        try:
-            model = load_deep_model()
-        except Exception as e:
-            st.error(f"Failed to load deep learning model: {str(e)}")
-            return
-    elif model_type == "Traditional ML":
-        try:
-            model = load_ml_model()
-        except Exception as e:
-            st.error(f"Failed to load Random Forest model: {str(e)}")
+    # Load model if needed
+    model = None
+    if model_type in ["Deep Learning", "Traditional ML"]:
+        model = load_model_once(model_type)
+        if model is None:
             return
 
     # File uploader
