@@ -57,16 +57,35 @@ model = None
 from scripts.dataset.make_features import extract_features
 
 def load_model():
-    """Load the Random Forest model from Hugging Face once when the app starts."""
+    """Load the Random Forest model from ONNX format."""
     global model
     if model is None:
-        print("Loading Random Forest model from Hugging Face...")
-        model_path = hf_hub_download(
-            repo_id="okamdar/food-classification",
-            filename="rf_model.pkl",
-            local_dir=os.path.join(project_root, "models")
-        )
-        model = joblib.load(model_path)
+        try:
+            print("Loading Random Forest model...")
+            # First try to load from local models directory
+            local_model_path = os.path.join(project_root, "models", "rf_model.onnx")
+            if os.path.exists(local_model_path):
+                print("Loading model from local directory...")
+                import onnxruntime as ort
+                model = ort.InferenceSession(local_model_path)
+                print("Model loaded successfully from local directory")
+                return model
+            
+            # If local model doesn't exist, try Hugging Face
+            print("Model not found locally, trying Hugging Face...")
+            model_path = hf_hub_download(
+                repo_id="okamdar/food-classification",
+                filename="rf_model.onnx",
+                local_dir=os.path.join(project_root, "models")
+            )
+            print(f"Model downloaded to: {model_path}")
+            import onnxruntime as ort
+            model = ort.InferenceSession(model_path)
+            print("Model loaded successfully from Hugging Face")
+        except Exception as e:
+            print(f"Error loading model: {str(e)}")
+            print("Please ensure the model file exists locally or is accessible on Hugging Face")
+            raise
     return model
 
 def train_model():
@@ -74,7 +93,7 @@ def train_model():
     This function:
     1. Loads features
     2. Creates a pipeline with feature scaling and PCA
-    3. Trains and saves a Random Forest classifier
+    3. Trains and saves a Random Forest classifier in ONNX format
     
     Returns:
         sklearn.pipeline.Pipeline: Trained model
@@ -112,10 +131,23 @@ def train_model():
     model.fit(X, y)
     print(f"Training completed in {time.time() - start_time:.2f} seconds")
 
-    # Save model
-    model_path = os.path.join(project_root, "models", "rf_model.pkl")
-    joblib.dump(model, model_path)
-    print(f"Model saved to: {model_path}")
+    # Save model in ONNX format
+    print("Converting model to ONNX format...")
+    from skl2onnx import convert_sklearn
+    from skl2onnx.common.data_types import FloatTensorType
+    
+    # Define the input type for ONNX
+    initial_type = [('float_input', FloatTensorType([None, X.shape[1]]))]
+    
+    # Convert to ONNX
+    onnx_model = convert_sklearn(model, initial_types=initial_type)
+    
+    # Save the ONNX model
+    onnx_path = os.path.join(project_root, "models", "rf_model.onnx")
+    with open(onnx_path, "wb") as f:
+        f.write(onnx_model.SerializeToString())
+    
+    print(f"Model saved to: {onnx_path}")
     
     return model
 
@@ -198,7 +230,7 @@ def evaluate_ml_classifier(test_dir, model):
     return accuracy, report, cm
 
 def predict_from_image(image_array):
-    """Predict food class from an image array using the loaded Random Forest model.
+    """Predict food class from an image array using the loaded ONNX model.
     Args:
         image_array (numpy.ndarray): Input image as numpy array
     Returns:
@@ -212,10 +244,18 @@ def predict_from_image(image_array):
     if image_array is None:
         raise ValueError("Cannot decode image")
 
-    # Extract features and make prediction
+    # Extract features
     features = extract_features(image_array).reshape(1, -1)
-    prediction = model.predict(features)[0]
-    return prediction
+    
+    # Prepare input for ONNX model
+    input_name = model.get_inputs()[0].name
+    output_name = model.get_outputs()[0].name
+    
+    # Make prediction
+    prediction = model.run([output_name], {input_name: features.astype(np.float32)})[0]
+    predicted_class = class_names[prediction[0]]
+    
+    return predicted_class
 
 if __name__ == "__main__":
     # Train and save the model
