@@ -20,8 +20,8 @@ sys.path.append(project_root)
 # Import classifiers
 from scripts.naive.naive import classify_image_by_features
 from scripts.api.food_summary import get_food_summary
-from scripts.deep.train import predict_from_image as predict_from_image_deep, load_model
-from scripts.trad.ML import predict_from_image as predict_from_image_ml
+from scripts.deep.train import predict_from_image as predict_from_image_deep, load_model as load_deep_model
+from scripts.trad.ML import predict_from_image as predict_from_image_ml, load_model as load_ml_model
 
 # Constants for deep learning
 IMG_SIZE = 224
@@ -63,11 +63,6 @@ def load_data():
         feature_index = json.load(f)
     return feature_index
 
-# Load deep learning model
-@st.cache_resource
-def load_deep_model():
-    return load_model()
-
 def main():
     st.title("🍽️ Food Classifier")
     
@@ -105,12 +100,18 @@ def main():
         st.error("Failed to load feature index. Please check the file path.")
         return
 
-    # Load deep learning model if needed
+    # Load models if needed
     if model_type == "Deep Learning":
         try:
             model = load_deep_model()
         except Exception as e:
             st.error(f"Failed to load deep learning model: {str(e)}")
+            return
+    elif model_type == "Traditional ML":
+        try:
+            model = load_ml_model()
+        except Exception as e:
+            st.error(f"Failed to load Random Forest model: {str(e)}")
             return
 
     # File uploader

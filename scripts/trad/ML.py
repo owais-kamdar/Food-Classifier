@@ -27,7 +27,47 @@ from huggingface_hub import hf_hub_download
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
 sys.path.append(project_root)
 
+# Class names list
+class_names = ['apple pie', 'baby back ribs', 'baked potato', 'baklava', 
+               'beef carpaccio', 'beef tartare', 'beet salad', 'beignets', 
+               'bibimbap', 'bread pudding', 'breakfast burrito', 'bruschetta', 
+               'butter naan', 'caesar salad', 'cannoli', 'caprese salad', 'carrot cake', 
+               'ceviche', 'chai', 'chapati', 'cheese plate', 'cheesecake', 'chicken curry', 
+               'chicken quesadilla', 'chicken wings', 'chocolate cake', 'chocolate mousse', 
+               'chole bhature', 'churros', 'clam chowder', 'club sandwich', 'crab cakes', 
+               'creme brulee', 'crispy chicken', 'croque madame', 'cup cakes', 'dal makhani', 
+               'deviled eggs', 'dhokla', 'donuts', 'dumplings', 'edamame', 'eggs benedict', 
+               'escargots', 'falafel', 'filet mignon', 'fish and chips', 'foie gras', 'french fries', 
+               'french onion soup', 'french toast', 'fried calamari', 'fried rice', 'frozen yogurt', 
+               'garlic bread', 'gnocchi', 'greek salad', 'grilled cheese sandwich', 'grilled salmon', 
+               'guacamole', 'gyoza', 'hamburger', 'hot and sour soup', 'hot dog', 'huevos rancheros', 
+               'hummus', 'ice cream', 'idli', 'jalebi', 'kaathi rolls', 'kadai paneer', 'kulfi', 
+               'lasagna', 'lobster bisque', 'lobster roll sandwich', 'macaroni and cheese', 'macarons', 
+               'masala dosa', 'miso soup', 'momos', 'mussels', 'nachos', 'omelette', 'onion rings', 
+               'oysters', 'paani puri', 'pad thai', 'paella', 'pakode', 'pancakes', 'panna cotta', 
+               'pav bhaji', 'peking duck', 'pho', 'pizza', 'pork chop', 'poutine', 'prime rib', 
+               'pulled pork sandwich', 'ramen', 'ravioli', 'red velvet cake', 'risotto', 'samosa', 
+               'sandwich', 'sashimi', 'scallops', 'seaweed salad', 'shrimp and grits', 'spaghetti bolognese', 
+               'spaghetti carbonara', 'spring rolls', 'steak', 'strawberry shortcake', 'sushi', 'tacos', 
+               'takoyaki', 'taquito', 'tiramisu', 'tuna tartare', 'waffles']
+
+# Global model variable
+model = None
+
 from scripts.dataset.make_features import extract_features
+
+def load_model():
+    """Load the Random Forest model from Hugging Face once when the app starts."""
+    global model
+    if model is None:
+        print("Loading Random Forest model from Hugging Face...")
+        model_path = hf_hub_download(
+            repo_id="okamdar/food-classification",
+            filename="rf_model.pkl",
+            local_dir=os.path.join(project_root, "models")
+        )
+        model = joblib.load(model_path)
+    return model
 
 def train_model():
     """Train a Random Forest model for food classification.
@@ -95,7 +135,6 @@ def evaluate_ml_classifier(test_dir, model):
     # Get all image paths and labels first
     image_paths = []
     true_labels = []
-    class_names = sorted(os.listdir(test_dir))
     
     print("Collecting image paths...")
     for class_name in tqdm(class_names, desc="Collecting paths"):
@@ -159,8 +198,7 @@ def evaluate_ml_classifier(test_dir, model):
     return accuracy, report, cm
 
 def predict_from_image(image_array):
-    """Predict food class from an image array using the trained Random Forest model.
-    This function: Downloads and loads the model from Hugging Face, then makes a prediction
+    """Predict food class from an image array using the loaded Random Forest model.
     Args:
         image_array (numpy.ndarray): Input image as numpy array
     Returns:
@@ -168,15 +206,8 @@ def predict_from_image(image_array):
     Raises:
         ValueError: If the image cannot be decoded
     """
-    # Download model from Hugging Face
-    model_path = hf_hub_download(
-        repo_id="okamdar/food-classification",
-        filename="rf_model.pkl",
-        local_dir=os.path.join(project_root, "models")
-    )
-    
-    # Load the model
-    model = joblib.load(model_path)
+    # Get the loaded model
+    model = load_model()
     
     if image_array is None:
         raise ValueError("Cannot decode image")
