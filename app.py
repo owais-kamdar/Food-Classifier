@@ -80,23 +80,18 @@ def load_model_once(model_type):
     """Load model only once and cache it in session state"""
     if model_type == "Deep Learning" and st.session_state.deep_model is None:
         try:
-            model = load_deep_model()
-            model = model.to('cpu')  # Force to CPU
-            model.eval()  # Set to evaluation mode
-            st.session_state.deep_model = model
-            return model
+            st.session_state.deep_model = load_deep_model()
         except Exception as e:
             st.error(f"Failed to load deep learning model: {str(e)}")
             return None
+        return st.session_state.deep_model
     elif model_type == "Traditional ML" and st.session_state.ml_model is None:
         try:
-            # Load the model directly since load_ml_model() returns the model
-            model = load_ml_model()
-            st.session_state.ml_model = model
-            return model
+            st.session_state.ml_model = load_ml_model()
         except Exception as e:
             st.error(f"Failed to load Random Forest model: {str(e)}")
             return None
+        return st.session_state.ml_model
     return st.session_state.deep_model if model_type == "Deep Learning" else st.session_state.ml_model
 
 def clear_models():
