@@ -23,9 +23,11 @@ This project approaches this problem through three approaches:
 Added Feature:
 1. **LLM Based Nutrition and Feedback**: API Call to GPT-3.5-Turbo to provide information for classified food
 
-## [Deployed App](https://food-classifier-w7wtvmoi4nwkrahdh4tjyh.streamlit.app/)
+## [Streamlit Deployment](https://food-classifier-w7wtvmoi4nwkrahdh4tjyh.streamlit.app/) - for quick trials
 The Machine Learning approach was taken out of the final app due to large model size and memory constraints.
 
+## [Hugging Face Deployment](https://huggingface.co/spaces/okamdar/food-classifier) - full app
+Inlcudes all three approaches, but takes some time to load for the Trad ML model.
 
 ## Previous Efforts in AI-Powered Food Classification and Tracking
 
