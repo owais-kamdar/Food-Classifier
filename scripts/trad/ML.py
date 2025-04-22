@@ -61,22 +61,10 @@ def load_model():
     global model
     if model is None:
         try:
-            print("Loading Random Forest model...")
-            # First try to load from local models directory
-            local_model_path = os.path.join(project_root, "models", "rf_model.onnx")
-            if os.path.exists(local_model_path):
-                print("Loading model from local directory...")
-                import onnxruntime as ort
-                model = ort.InferenceSession(local_model_path)
-                print("Model loaded successfully from local directory")
-                return model
-            
-            # If local model doesn't exist, try Hugging Face
-            print("Model not found locally, trying Hugging Face...")
+            print("Loading Random Forest model from Hugging Face...")
             model_path = hf_hub_download(
                 repo_id="okamdar/food-classification",
-                filename="rf_model.onnx",
-                local_dir=os.path.join(project_root, "models")
+                filename="rf_model.onnx"
             )
             print(f"Model downloaded to: {model_path}")
             import onnxruntime as ort
@@ -84,7 +72,7 @@ def load_model():
             print("Model loaded successfully from Hugging Face")
         except Exception as e:
             print(f"Error loading model: {str(e)}")
-            print("Please ensure the model file exists locally or is accessible on Hugging Face")
+            print("Please ensure the model repository is accessible on Hugging Face")
             raise
     return model
 
@@ -249,11 +237,11 @@ def predict_from_image(image_array):
     
     # Prepare input for ONNX model
     input_name = model.get_inputs()[0].name
-    output_name = model.get_outputs()[0].name
     
     # Make prediction
-    prediction = model.run([output_name], {input_name: features.astype(np.float32)})[0]
-    predicted_class = class_names[prediction[0]]
+    prediction = model.run(None, {input_name: features.astype(np.float32)})[0]
+    predicted_class_idx = np.argmax(prediction[0])
+    predicted_class = class_names[predicted_class_idx]
     
     return predicted_class
 

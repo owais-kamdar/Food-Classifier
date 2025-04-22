@@ -14,6 +14,7 @@ import torch.nn as nn
 from huggingface_hub import hf_hub_download
 import psutil
 import gc
+import onnxruntime as ort
 
 # Get the correct project root
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -88,6 +89,7 @@ def load_model_once(model_type):
             st.success("Deep Learning model loaded successfully!")
         except Exception as e:
             st.error(f"Failed to load deep learning model: {str(e)}")
+            st.info("Please ensure you have internet access and the model repository is accessible.")
             st.session_state.model_loaded = False
             return None
         return st.session_state.deep_model
