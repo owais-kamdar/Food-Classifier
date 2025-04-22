@@ -23,7 +23,7 @@ This project approaches this problem through three approaches:
 Added Feature:
 1. **LLM Based Nutrition and Feedback**: API Call to GPT-3.5-Turbo to provide information for classified food
 
-## [Deployed App](https://food-classifier-qbhfwg6tqpasdxqer95gvz.streamlit.app/)
+## [Deployed App](https://food-classifier-w7wtvmoi4nwkrahdh4tjyh.streamlit.app/)
 
 
 ## Previous Efforts in AI-Powered Food Classification and Tracking
